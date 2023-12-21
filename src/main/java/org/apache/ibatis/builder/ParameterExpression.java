@@ -42,12 +42,14 @@ public class ParameterExpression extends HashMap<String, String> {
   private void parse(String expression) {
     int p = skipWS(expression, 0);
     if (expression.charAt(p) == '(') {
+      // 如果是"("，从下一个位置开始解析
       expression(expression, p + 1);
     } else {
       property(expression, p);
     }
   }
 
+  // 匹配左右括号
   private void expression(String expression, int left) {
     int match = 1;
     int right = left + 1;
@@ -71,8 +73,10 @@ public class ParameterExpression extends HashMap<String, String> {
     }
   }
 
+  // 返回expression中从p开始的非空格的位置
   private int skipWS(String expression, int p) {
     for (int i = p; i < expression.length(); i++) {
+      // 如果不是空格，则返回该位置, 0x20是空格的ascii码
       if (expression.charAt(i) > 0x20) {
         return i;
       }
@@ -83,6 +87,7 @@ public class ParameterExpression extends HashMap<String, String> {
   private int skipUntil(String expression, int p, final String endChars) {
     for (int i = p; i < expression.length(); i++) {
       char c = expression.charAt(i);
+      // 如果是endChars中的字符，则返回该位置
       if (endChars.indexOf(c) > -1) {
         return i;
       }
@@ -116,6 +121,7 @@ public class ParameterExpression extends HashMap<String, String> {
   private void option(String expression, int p) {
     int left = skipWS(expression, p);
     if (left < expression.length()) {
+      // 根据=号分割name和value
       int right = skipUntil(expression, left, "=");
       String name = trimmedStr(expression, left, right);
       left = right + 1;

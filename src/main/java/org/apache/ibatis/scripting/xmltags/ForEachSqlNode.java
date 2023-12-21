@@ -101,21 +101,27 @@ public class ForEachSqlNode implements SqlNode {
       int uniqueNumber = context.getUniqueNumber();
       // Issue #709
       if (o instanceof Map.Entry) {
+        // 如果是Map类型，将key和value添加到bindings集合中
         @SuppressWarnings("unchecked")
         Map.Entry<Object, Object> mapEntry = (Map.Entry<Object, Object>) o;
         applyIndex(context, mapEntry.getKey(), uniqueNumber);
         applyItem(context, mapEntry.getValue(), uniqueNumber);
       } else {
+        // 将集合中的索引和元素添加到bindings集合中
+        // bindings集合中的key和后面解析成sql片段中的占位符都使用了itemizeItem方法, 生成了相同的key, 这样就可以做参数替换了
         applyIndex(context, i, uniqueNumber);
         applyItem(context, o, uniqueNumber);
       }
+      // 调用子节点的apply方法, 注意这里使用的是FilterDynamicContext对象
       contents.apply(new FilteredDynamicContext(configuration, context, index, item, uniqueNumber));
       if (first) {
         first = !((PrefixedContext) context).isPrefixApplied();
       }
+      // 还原context
       context = oldContext;
       i++;
     }
+    // 添加close指定的后缀
     applyClose(context);
     context.getBindings().remove(item);
     context.getBindings().remove(index);

@@ -22,10 +22,12 @@ import org.apache.ibatis.session.Configuration;
 
 /**
  * @author Clinton Begin
+ * 使用组合模式，将动态SQL转换成静态SQL
  */
 public class DynamicSqlSource implements SqlSource {
 
   private final Configuration configuration;
+  // 组合模式  根节点
   private final SqlNode rootSqlNode;
 
   public DynamicSqlSource(Configuration configuration, SqlNode rootSqlNode) {
@@ -35,10 +37,13 @@ public class DynamicSqlSource implements SqlSource {
 
   @Override
   public BoundSql getBoundSql(Object parameterObject) {
+    // 创建DynamicContext对象，parameterObject是传入的实参
     DynamicContext context = new DynamicContext(configuration, parameterObject);
+    // 通过调用根节点的apply方法，会调动整个树形结构中的所有节点的apply方法，将整个sql进行解析
     rootSqlNode.apply(context);
     SqlSourceBuilder sqlSourceParser = new SqlSourceBuilder(configuration);
     Class<?> parameterType = parameterObject == null ? Object.class : parameterObject.getClass();
+    // 解析sql, sql中包含“?”
     SqlSource sqlSource = sqlSourceParser.parse(context.getSql(), parameterType, context.getBindings());
     BoundSql boundSql = sqlSource.getBoundSql(parameterObject);
     context.getBindings().forEach(boundSql::setAdditionalParameter);

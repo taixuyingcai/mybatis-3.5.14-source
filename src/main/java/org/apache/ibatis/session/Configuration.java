@@ -114,6 +114,7 @@ public class Configuration {
   protected boolean callSettersOnNulls;
   protected boolean useActualParamName = true;
   protected boolean returnInstanceForEmptyRow;
+  // 是否去除空格
   protected boolean shrinkWhitespacesInSql;
   protected boolean nullableOnForEach;
   protected boolean argNameBasedConstructorAutoMapping;

@@ -118,6 +118,7 @@ public class ResultLoaderMap {
     /**
      * Meta object which sets loaded properties.
      */
+    // 外层对象（一般是外层对象的代理对象）对应的MetaObject
     private transient MetaObject metaResultObject;
     /**
      * Result loader which loads unread properties.
@@ -134,6 +135,7 @@ public class ResultLoaderMap {
     /**
      * Name of the unread property.
      */
+    // 延迟加载的属性名称
     private final String property;
     /**
      * ID of SQL statement which loads the property.
@@ -215,6 +217,7 @@ public class ResultLoaderMap {
             old.parameterObject, old.targetType, old.cacheKey, old.boundSql);
       }
 
+      // 调用ResultLoader的loadResult方法，将属性值设置到metaResultObject中
       this.metaResultObject.setValue(property, this.resultLoader.loadResult());
     }
 

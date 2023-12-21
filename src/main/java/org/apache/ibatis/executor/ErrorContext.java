@@ -19,14 +19,18 @@ package org.apache.ibatis.executor;
  * @author Clinton Begin
  */
 public class ErrorContext {
-
+  
+  // 系统换行符
   private static final String LINE_SEPARATOR = System.lineSeparator();
   private static final ThreadLocal<ErrorContext> LOCAL = ThreadLocal.withInitial(ErrorContext::new);
 
   private ErrorContext stored;
+  // 错误信息所在的资源
   private String resource;
+  // 发生错误里的动作
   private String activity;
   private String object;
+  // 错误信息
   private String message;
   private String sql;
   private Throwable cause;

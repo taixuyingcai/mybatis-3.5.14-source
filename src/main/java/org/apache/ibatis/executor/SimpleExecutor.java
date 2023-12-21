@@ -20,7 +20,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collections;
 import java.util.List;
-
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.executor.statement.StatementHandler;
 import org.apache.ibatis.logging.Log;
@@ -35,61 +34,67 @@ import org.apache.ibatis.transaction.Transaction;
  * @author Clinton Begin
  */
 public class SimpleExecutor extends BaseExecutor {
-
-  public SimpleExecutor(Configuration configuration, Transaction transaction) {
-    super(configuration, transaction);
-  }
-
-  @Override
-  public int doUpdate(MappedStatement ms, Object parameter) throws SQLException {
-    Statement stmt = null;
-    try {
-      Configuration configuration = ms.getConfiguration();
-      StatementHandler handler = configuration.newStatementHandler(this, ms, parameter, RowBounds.DEFAULT, null, null);
-      stmt = prepareStatement(handler, ms.getStatementLog());
-      return handler.update(stmt);
-    } finally {
-      closeStatement(stmt);
-    }
-  }
-
-  @Override
-  public <E> List<E> doQuery(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler,
-      BoundSql boundSql) throws SQLException {
-    Statement stmt = null;
-    try {
-      Configuration configuration = ms.getConfiguration();
-      StatementHandler handler = configuration.newStatementHandler(wrapper, ms, parameter, rowBounds, resultHandler,
-          boundSql);
-      stmt = prepareStatement(handler, ms.getStatementLog());
-      return handler.query(stmt, resultHandler);
-    } finally {
-      closeStatement(stmt);
-    }
-  }
-
-  @Override
-  protected <E> Cursor<E> doQueryCursor(MappedStatement ms, Object parameter, RowBounds rowBounds, BoundSql boundSql)
-      throws SQLException {
-    Configuration configuration = ms.getConfiguration();
-    StatementHandler handler = configuration.newStatementHandler(wrapper, ms, parameter, rowBounds, null, boundSql);
-    Statement stmt = prepareStatement(handler, ms.getStatementLog());
-    Cursor<E> cursor = handler.queryCursor(stmt);
-    stmt.closeOnCompletion();
-    return cursor;
-  }
-
-  @Override
-  public List<BatchResult> doFlushStatements(boolean isRollback) {
-    return Collections.emptyList();
-  }
-
-  private Statement prepareStatement(StatementHandler handler, Log statementLog) throws SQLException {
-    Statement stmt;
-    Connection connection = getConnection(statementLog);
-    stmt = handler.prepare(connection, transaction.getTimeout());
-    handler.parameterize(stmt);
-    return stmt;
-  }
-
+	
+	public SimpleExecutor(Configuration configuration, Transaction transaction) {
+		super(configuration, transaction);
+	}
+	
+	@Override
+	public int doUpdate(MappedStatement ms, Object parameter) throws SQLException {
+		Statement stmt = null;
+		try {
+			Configuration configuration = ms.getConfiguration();
+			// 创建StatementHandler，实际返回的是RoutingStatementHandler, 其会根据statementType，返回不同的StatementHandler
+			StatementHandler handler = configuration.newStatementHandler(this, ms, parameter, RowBounds.DEFAULT, null, null);
+			stmt = prepareStatement(handler, ms.getStatementLog());
+			return handler.update(stmt);
+		} finally {
+			closeStatement(stmt);
+		}
+	}
+	
+	@Override
+	public <E> List<E> doQuery(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler,
+		BoundSql boundSql) throws SQLException {
+		Statement stmt = null;
+		try {
+			Configuration configuration = ms.getConfiguration();
+			// 创建StatementHandler，实际返回的是RoutingStatementHandler, 其会根据statementType，返回不同的StatementHandler
+			StatementHandler handler = configuration.newStatementHandler(wrapper, ms, parameter, rowBounds, resultHandler,
+				boundSql);
+			// 完成Statement的创建和初始化，并设置参数占位符
+			stmt = prepareStatement(handler, ms.getStatementLog());
+			// 调用StatementHandler的query方法执行SQL,并通过ResultHandler.handleResultSets方法处理结果集
+			return handler.query(stmt, resultHandler);
+		} finally {
+			closeStatement(stmt);
+		}
+	}
+	
+	@Override
+	protected <E> Cursor<E> doQueryCursor(MappedStatement ms, Object parameter, RowBounds rowBounds, BoundSql boundSql)
+		throws SQLException {
+		Configuration configuration = ms.getConfiguration();
+		StatementHandler handler = configuration.newStatementHandler(wrapper, ms, parameter, rowBounds, null, boundSql);
+		Statement stmt = prepareStatement(handler, ms.getStatementLog());
+		Cursor<E> cursor = handler.queryCursor(stmt);
+		stmt.closeOnCompletion();
+		return cursor;
+	}
+	
+	@Override
+	public List<BatchResult> doFlushStatements(boolean isRollback) {
+		return Collections.emptyList();
+	}
+	
+	private Statement prepareStatement(StatementHandler handler, Log statementLog) throws SQLException {
+		Statement stmt;
+		Connection connection = getConnection(statementLog);
+		// 创建Statement对象
+		stmt = handler.prepare(connection, transaction.getTimeout());
+		// 处理占位符, 通过PrepareStatement设置参数
+		handler.parameterize(stmt);
+		return stmt;
+	}
+	
 }

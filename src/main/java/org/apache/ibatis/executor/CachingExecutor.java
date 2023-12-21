@@ -17,7 +17,6 @@ package org.apache.ibatis.executor;
 
 import java.sql.SQLException;
 import java.util.List;
-
 import org.apache.ibatis.cache.Cache;
 import org.apache.ibatis.cache.CacheKey;
 import org.apache.ibatis.cache.TransactionalCacheManager;
@@ -35,6 +34,11 @@ import org.apache.ibatis.transaction.Transaction;
 /**
  * @author Clinton Begin
  * @author Eduardo Macarron
+ * 二级缓存执行器
+ * 二级缓存是与应用的生命周期一致的
+ * 1. configuration.setCacheEnabled(true)  二级缓存的总开关
+ * 2. <cache-ref name="cacheId" />  或 <cache></cache> 节点的配置
+ * 3. <select>节点的 useCache 属性
  */
 public class CachingExecutor implements Executor {
 

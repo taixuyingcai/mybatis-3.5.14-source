@@ -29,7 +29,9 @@ public class ParameterMapping {
 
   private Configuration configuration;
 
+  // 参数名称
   private String property;
+  // 参数类型 输入还是输出
   private ParameterMode mode;
   private Class<?> javaType = Object.class;
   private JdbcType jdbcType;

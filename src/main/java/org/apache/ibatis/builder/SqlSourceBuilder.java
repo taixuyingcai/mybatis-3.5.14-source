@@ -41,6 +41,7 @@ public class SqlSourceBuilder extends BaseBuilder {
   }
 
   public SqlSource parse(String originalSql, Class<?> parameterType, Map<String, Object> additionalParameters) {
+    // TokenHandler 解析 #{property} 参数, ParameterMappingTokenHandler解析完成的sql中会有"?"占位符
     ParameterMappingTokenHandler handler = new ParameterMappingTokenHandler(configuration, parameterType,
         additionalParameters);
     GenericTokenParser parser = new GenericTokenParser("#{", "}", handler);
@@ -50,6 +51,7 @@ public class SqlSourceBuilder extends BaseBuilder {
     } else {
       sql = parser.parse(originalSql);
     }
+    // DynamicSqlSource和RowSqlSource经过解析都会封装成StaticSqlSource
     return new StaticSqlSource(configuration, sql, handler.getParameterMappings());
   }
 
@@ -69,7 +71,9 @@ public class SqlSourceBuilder extends BaseBuilder {
 
   private static class ParameterMappingTokenHandler extends BaseBuilder implements TokenHandler {
 
+    // 解析得到的parameterMapping集合
     private final List<ParameterMapping> parameterMappings = new ArrayList<>();
+    // 参数类型
     private final Class<?> parameterType;
     private final MetaObject metaParameters;
 
@@ -87,13 +91,18 @@ public class SqlSourceBuilder extends BaseBuilder {
     @Override
     public String handleToken(String content) {
       parameterMappings.add(buildParameterMapping(content));
+      // 解析完成后返回"?"
       return "?";
     }
 
+    // content是经过前面的sqlNode和sqlSource的解析后的内容，例如：__frch_item_0
     private ParameterMapping buildParameterMapping(String content) {
+      // 解析参数的属性，例如: #{__frch_item_0, javaType=int,jdbcType=VARCHAR, typeHandler=MyTypeHandler}
+      // 会被如下的一个map: {"property": "__frch_item_0", "javaType": "int", "jdbcType": "VARCHAR", "typeHandler": "MyTypeHandler"}
       Map<String, String> propertiesMap = parseParameterMapping(content);
       String property = propertiesMap.get("property");
       Class<?> propertyType;
+      // 确定参数的类型
       if (metaParameters.hasGetter(property)) { // issue #448 get type from additional params
         propertyType = metaParameters.getGetterType(property);
       } else if (typeHandlerRegistry.hasTypeHandler(parameterType)) {
@@ -113,6 +122,7 @@ public class SqlSourceBuilder extends BaseBuilder {
       ParameterMapping.Builder builder = new ParameterMapping.Builder(configuration, property, propertyType);
       Class<?> javaType = propertyType;
       String typeHandlerAlias = null;
+      // 解析参数的属性
       for (Map.Entry<String, String> entry : propertiesMap.entrySet()) {
         String name = entry.getKey();
         String value = entry.getValue();

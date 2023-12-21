@@ -32,6 +32,7 @@ import org.apache.ibatis.session.Configuration;
  *
  * @author Clinton Begin
  */
+// 包含完整的sql映射关系
 public class BoundSql {
 
   // sql语句，其中可能包含"?"占位符
