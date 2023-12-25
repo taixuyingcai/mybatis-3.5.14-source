@@ -22,12 +22,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
 import org.apache.ibatis.reflection.ExceptionUtil;
 import org.apache.ibatis.util.MapUtil;
 
 /**
  * @author Clinton Begin
+ * 插件工具类
  */
 public class Plugin implements InvocationHandler {
 
@@ -40,22 +40,28 @@ public class Plugin implements InvocationHandler {
     this.interceptor = interceptor;
     this.signatureMap = signatureMap;
   }
-
+  
+  // 静态方法 用于创建代理对象
   public static Object wrap(Object target, Interceptor interceptor) {
+    // 处理@intercepts注解和@signature注解, 该注解中定义了要拦截的方法
     Map<Class<?>, Set<Method>> signatureMap = getSignatureMap(interceptor);
+    // 目标类型
     Class<?> type = target.getClass();
     Class<?>[] interfaces = getAllInterfaces(type, signatureMap);
     if (interfaces.length > 0) {
+      // JDK动态代理, 这里的InvocationHandler就是Plugin类
       return Proxy.newProxyInstance(type.getClassLoader(), interfaces, new Plugin(target, interceptor, signatureMap));
     }
     return target;
   }
-
+  
+  // 拦截逻辑
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     try {
       Set<Method> methods = signatureMap.get(method.getDeclaringClass());
       if (methods != null && methods.contains(method)) {
+        // 检测是需要拦截的方法, 则执行拦截器的intercept方法
         return interceptor.intercept(new Invocation(target, method, args));
       }
       return method.invoke(target, args);

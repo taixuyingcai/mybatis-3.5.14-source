@@ -27,7 +27,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
-
 import org.apache.ibatis.binding.MapperRegistry;
 import org.apache.ibatis.builder.CacheRefResolver;
 import org.apache.ibatis.builder.IncompleteElementException;
@@ -721,6 +720,7 @@ public class Configuration {
     return newExecutor(transaction, defaultExecutorType);
   }
 
+  // 创建Executor对象
   public Executor newExecutor(Transaction transaction, ExecutorType executorType) {
     executorType = executorType == null ? defaultExecutorType : executorType;
     Executor executor;
@@ -734,6 +734,7 @@ public class Configuration {
     if (cacheEnabled) {
       executor = new CachingExecutor(executor);
     }
+    // 通过interceptorChain.pluginAll()方法创建Executor的代理对象
     return (Executor) interceptorChain.pluginAll(executor);
   }
 

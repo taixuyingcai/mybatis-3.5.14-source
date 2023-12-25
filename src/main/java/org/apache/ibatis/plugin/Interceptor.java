@@ -19,15 +19,19 @@ import java.util.Properties;
 
 /**
  * @author Clinton Begin
+ * 拦截器
  */
 public interface Interceptor {
-
+  
+  // 执行拦截器逻辑的方法
   Object intercept(Invocation invocation) throws Throwable;
-
+  
+  // 决定是否触发intercept方法
   default Object plugin(Object target) {
     return Plugin.wrap(target, this);
   }
-
+  
+  // 根据配配初始化拦截器
   default void setProperties(Properties properties) {
     // NOP
   }
